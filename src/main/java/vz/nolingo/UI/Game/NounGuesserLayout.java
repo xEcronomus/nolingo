@@ -1,5 +1,7 @@
 package vz.nolingo.UI.Game;
 
+import java.util.List;
+
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -14,16 +16,17 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.theme.lumo.Lumo;
 
 import lombok.SneakyThrows;
+import vz.nolingo.Entity.BaseWord;
 import vz.nolingo.Entity.Noun;
 import vz.nolingo.Enum.NounPronoun;
+import vz.nolingo.UI.Game.Component.ScoreBasedInput;
 
-public class NounGuesserLayout extends VerticalLayout {
+public class NounGuesserLayout extends VerticalLayout implements IFinishable {
     
     Span word = new Span();
     
     Noun noun;
 
-    public TextField german = new TextField();
     
     public TextField plural = new TextField();
 
@@ -34,32 +37,32 @@ public class NounGuesserLayout extends VerticalLayout {
 
     GameLayout parent;
 
-    public NounGuesserLayout(GameLayout parent,Noun noun){
+    public NounGuesserLayout(GameLayout parent,Noun noun,List<BaseWord> variations){
         this.noun = noun;
         this.parent = parent;
         word.add(noun.english);  
+        word.setSizeUndefined();
         String solution = noun.german;
         String pluralSolution = noun.plural;
 
-        helpDialog(solution);
+        helpDialog(solution+" - "+pluralSolution);
         
-        validateInputData(solution);
+        ScoreBasedInput sbi = new ScoreBasedInput(this ,noun, variations);
         validatePrularInputData(pluralSolution);
         formatButtons(noun);
 
         buttonLayout.add(der,die,das);
-        german.setAutocomplete(Autocomplete.OFF);
-        german.setSuffixComponent(new Icon(VaadinIcon.ENTER));  
-        
+       
         plural.setAutocomplete(Autocomplete.OFF);
         plural.setSuffixComponent(new Icon(VaadinIcon.ENTER));    
         add(word);
-        add(german);
+        add(sbi);
         add(buttonLayout);
         add(plural);
         setWidth("30%");    
         setAlignItems(Alignment.CENTER);
         getThemeList().add(Lumo.DARK);
+        setSizeUndefined();
     }
 
     private void formatButtons(Noun noun) {
@@ -70,22 +73,11 @@ public class NounGuesserLayout extends VerticalLayout {
         setButtonsEnabled(false);
     }
 
-    private void validateInputData(String solution) {
-        german.addKeyDownListener(Key.ENTER, e->{
-            if(german.getValue().equals(solution)){
-                setButtonsEnabled(true);
-                german.setEnabled(false);
-            }
-            else{
-                noun.score--;
-            }
-        });
-    }
-
+    
     private void validatePrularInputData(String solution) {
-        plural.addKeyDownListener(Key.ENTER, e->{
+        plural.addKeyDownListener(e->{
             if(plural.getValue().equals(solution)){
-                finish();
+                finished();
             }
             else{
                 noun.score--;
@@ -140,10 +132,20 @@ public class NounGuesserLayout extends VerticalLayout {
     }
 
     @SneakyThrows
-    private void finish(){
+    private void finished(){
         parent.next();
         noun.score++;
 
+    }
+    
+
+    public void sbiFinished(){
+        setButtonsEnabled(true);
+    }
+
+    @Override
+    public void finish() {
+        sbiFinished();
     }
 
 }

@@ -8,21 +8,13 @@ import lombok.Getter;
 
 @Entity
 @Getter
-@Table(name = "verb")
-public class Verb extends BaseWord {
-
-    public Verb(){
-        super();
-    }
-    
+@Table(name = "generic")
+public class Generic extends BaseWord {
 
     @Override
     public void build(List<String> params) {
         this.german = params.get(0); 
         this.english = params.get(1); 
-        
     }
-
-    
     
 }

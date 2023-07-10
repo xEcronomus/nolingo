@@ -10,22 +10,24 @@ import com.vaadin.flow.component.textfield.Autocomplete;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.theme.lumo.Lumo;
 
-import vz.nolingo.Entity.Verb;
+import vz.nolingo.Entity.Generic;
 
-public class VerbGuesserLayout extends VerticalLayout {
+public class GenericGuesserLayout extends VerticalLayout {
     
     Span word = new Span();  
+    Span kojugation = new Span();  
 
     public TextField input = new TextField();
 
     public GameLayout parent; 
-    Verb verb;
+    Generic generic;
 
-    public VerbGuesserLayout(GameLayout parent,Verb verb){
-        this.verb=verb;
+    public GenericGuesserLayout(GameLayout parent,Generic generic){
+        this.generic=generic;
         this.parent=parent;
-        word.add(verb.english);
-        String solution = verb.german;
+        word.add(generic.english);
+        String solution = generic.german;
+
         input.setAutocomplete(Autocomplete.OFF);
         input.setSuffixComponent(new Icon(VaadinIcon.ENTER));  
 
@@ -35,7 +37,7 @@ public class VerbGuesserLayout extends VerticalLayout {
         setSolutionValidator(solution);
         
 
-        add(word,input);
+        add(word,input,kojugation);
         setAlignItems(Alignment.CENTER);
         setWidth("30%"); 
         getThemeList().add(Lumo.DARK);
@@ -48,18 +50,18 @@ public class VerbGuesserLayout extends VerticalLayout {
                 input.setEnabled(false);
                 finish();
             }else{
-                verb.score--;
+                generic.score--;
             }
         });
     }
 
     
+
     private void createHelpDialog(Span span,String solution) {
         span.addClickListener(e->{
             Dialog helpDialog = new Dialog();
             helpDialog.setHeaderTitle(solution);
             Button cancelButton = new Button("Ok", e2 -> helpDialog.close());
-            
             helpDialog.getFooter().add(cancelButton);
             helpDialog.open();
         });
@@ -67,12 +69,11 @@ public class VerbGuesserLayout extends VerticalLayout {
 
     private void finish(){
         input.setEnabled(false);
-        input.addKeyDownListener(e->{});
-        verb.score++;
+        generic.score++;
         parent.next();
     }
 
-    
+   
 
 
 }

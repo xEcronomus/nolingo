@@ -1,10 +1,12 @@
 package vz.nolingo.UI;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import com.vaadin.flow.component.AbstractSinglePropertyField;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -13,14 +15,17 @@ import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.theme.lumo.Lumo;
 
+import lombok.SneakyThrows;
 import vz.nolingo.Entity.BaseWord;
+import vz.nolingo.Enum.NounPronoun;
 
 public class WordEditLayout extends VerticalLayout{
     
     public List<AbstractSinglePropertyField<?,?>> values = new ArrayList<>(); 
 
     @SuppressWarnings("all")
-    public WordEditLayout(Class<? extends BaseWord> clazz){
+    @SneakyThrows
+    public WordEditLayout(Class<? extends BaseWord> clazz, Optional<BaseWord> word){
         VerticalLayout dialogLayout = new VerticalLayout();
         List<Field> fields = Arrays.asList(clazz.getFields());
         Collections.reverse(fields);
@@ -30,6 +35,7 @@ public class WordEditLayout extends VerticalLayout{
 
             if(type.isInstance(new String())){
                 TextField textField = new TextField(f.getName());
+                setTextValueIfEdit(textField,word,f);
                 dialogLayout.add(textField);
                 values.add(textField);
                 if(first){
@@ -51,6 +57,17 @@ public class WordEditLayout extends VerticalLayout{
                 if(first){
                     select.focus();
                 }
+
+                if(word.isPresent()){
+                    for(Method method : word.get().getClass().getMethods()){
+                        System.out.println(method.getName().toLowerCase());
+                        if(method.getName().toLowerCase().equals("get"+f.getName())){
+                        select.setValue(((NounPronoun)method.invoke(word.get())).toString());
+                    }
+
+        }
+                }
+                
             }
 
         }
@@ -61,6 +78,21 @@ public class WordEditLayout extends VerticalLayout{
         dialogLayout.getStyle().set("width", "18rem").set("max-width", "100%");
         add(dialogLayout);
         getThemeList().add(Lumo.DARK);
+    }
+
+    @SneakyThrows
+    private void setTextValueIfEdit(TextField textField, Optional<BaseWord> maybeWord, Field f) {
+        if(!maybeWord.isPresent()) return;
+        BaseWord word = maybeWord.get();
+        for(Method method : word.getClass().getMethods()){
+            if(method.getName().toLowerCase().equals("get"+f.getName())){
+                textField.setValue((String)method.invoke(word));
+            }
+            
+            System.out.println(method.getName().toLowerCase());
+        }
+        System.out.println("------------------");
+        
     }
 
     public List<String> getValues(){

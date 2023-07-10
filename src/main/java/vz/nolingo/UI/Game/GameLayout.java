@@ -1,6 +1,6 @@
 package vz.nolingo.UI.Game;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -8,11 +8,12 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 
 import lombok.SneakyThrows;
 import vz.nolingo.Entity.BaseWord;
+import vz.nolingo.Entity.Generic;
 import vz.nolingo.Entity.Noun;
 import vz.nolingo.Entity.Verb;
 import vz.nolingo.Service.BaseWordService;
 
-public class GameLayout extends VerticalLayout {
+public class GameLayout extends VerticalLayout implements IFinishable {
 
     BaseWordService baseWordService;
     
@@ -31,24 +32,27 @@ public class GameLayout extends VerticalLayout {
         next();
     }
 
+    private BaseWord selectNewWordFromList(List<? extends BaseWord> list){
+        currentWord = selectRandomFromList(list);
+        return currentWord;
+    }
     private BaseWord selectRandomFromList(List<? extends BaseWord> list){
         Random rand = new Random();
-        currentWord = list.get(rand.nextInt(list.size()));
-        return currentWord;
+        return list.get(rand.nextInt(list.size()));
     }
 
     @SuppressWarnings("all")
     public void next(){
-        if(counter >= 5){
+        /*if(counter >= 5){
             int counter = 0;
             Collections.sort(words);
-        }
+        }*/
         if(currentWordLayout != null){
             baseWordService.getController(currentWord.getClass()).save(currentWord);
             this.remove(currentWordLayout);
         }
         if(!words.isEmpty()){
-            createWordLayout(selectRandomFromList(words));
+            createWordLayout(selectNewWordFromList(words));
             counter++;
         }
     }
@@ -56,9 +60,8 @@ public class GameLayout extends VerticalLayout {
     @SneakyThrows
     private void createWordLayout(BaseWord word){
         if(word instanceof Noun){
-            NounGuesserLayout newNoun = new NounGuesserLayout(this,(Noun)word);
+            NounGuesserLayout newNoun = new NounGuesserLayout(this,(Noun)word, Arrays.asList(selectRandomFromList(words),selectRandomFromList(words)));
             add(newNoun);
-            newNoun.german.focus();
             currentWordLayout = newNoun;
         }
         else if(word instanceof Verb){
@@ -66,9 +69,20 @@ public class GameLayout extends VerticalLayout {
             add(newVerb);
             newVerb.input.focus();
             currentWordLayout = newVerb;
-        }else{
+        }
+        else if(word instanceof Generic){
+            GenericGuesserLayout genericGuesserLayout = new GenericGuesserLayout(this ,(Generic)word);
+            add(genericGuesserLayout);
+            currentWordLayout = genericGuesserLayout;
+        }
+        else{
             throw new IllegalStateException(":)");
         }
+    }
+
+    @Override
+    public void finish() {
+        next();
     }
 
 

@@ -6,9 +6,11 @@ import org.springframework.stereotype.Service;
 
 import lombok.SneakyThrows;
 import vz.nolingo.Controller.BaseController;
+import vz.nolingo.Controller.GenericController;
 import vz.nolingo.Controller.NounController;
 import vz.nolingo.Controller.VerbController;
 import vz.nolingo.Entity.BaseWord;
+import vz.nolingo.Entity.Generic;
 import vz.nolingo.Entity.Noun;
 import vz.nolingo.Entity.Verb;
 
@@ -20,6 +22,8 @@ public class BaseWordService {
     private NounController nounController;
     @Autowired
     private VerbController verbController;
+    @Autowired
+    private GenericController genericController;
 
 
     @SuppressWarnings("all")
@@ -31,6 +35,9 @@ public class BaseWordService {
         }
         else if(a instanceof Verb){
             return verbController;
+        }
+        else if(a instanceof Generic){
+            return genericController;
         }
         throw new IllegalArgumentException(":)");
     }

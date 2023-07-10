@@ -2,9 +2,7 @@ package vz.nolingo.UI;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
-import org.reflections.Reflections;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -18,6 +16,7 @@ import com.vaadin.flow.theme.lumo.Lumo;
 
 import vz.nolingo.Entity.BaseWord;
 import vz.nolingo.Service.BaseWordService;
+import vz.nolingo.Service.GenericService;
 import vz.nolingo.Service.NewWordService;
 import vz.nolingo.Service.NounService;
 import vz.nolingo.Service.VerbService;
@@ -38,7 +37,9 @@ public class MainView extends VerticalLayout {
     private NounService nounService;
     @Autowired(required = true)
     private VerbService verbService;
-    
+    @Autowired(required = true)
+    private GenericService genericService;
+
     public MainView() {
         this.setAlignItems(Alignment.CENTER);
         getThemeList().add(Lumo.DARK);
@@ -57,9 +58,7 @@ public class MainView extends VerticalLayout {
     private void createNewWordButton(MenuBar menuBar) {
         MenuItem newWord = menuBar.addItem("New word");
         SubMenu newWordSubMenu = newWord.getSubMenu();
-        Reflections reflections = new Reflections();    
-        Set<Class<? extends BaseWord>> classes = reflections.getSubTypesOf(BaseWord.class);
-        for(Class<? extends BaseWord> clazz : classes){
+        for(Class<? extends BaseWord> clazz : ReflectionUtil.getClasses()){
             newWordSubMenu.addItem(clazz.getSimpleName(),e->newWordService.showNewNounDialogWindow(clazz));
         }
     }
@@ -67,9 +66,7 @@ public class MainView extends VerticalLayout {
     private void createViewWordsButton(MenuBar menuBar) {
         MenuItem newWord = menuBar.addItem("View words");
         SubMenu newWordSubMenu = newWord.getSubMenu();
-        Reflections reflections = new Reflections();    
-        Set<Class<? extends BaseWord>> classes = reflections.getSubTypesOf(BaseWord.class);
-        for(Class<? extends BaseWord> clazz : classes){
+        for(Class<? extends BaseWord> clazz : ReflectionUtil.getClasses()){
             newWordSubMenu.addItem(clazz.getSimpleName(),e->viewWordsService.showViewNounDialogWindow(clazz));
         }
     }
@@ -80,6 +77,7 @@ public class MainView extends VerticalLayout {
             List<BaseWord> list = new ArrayList<BaseWord>();
             list.addAll(nounService.findAll());
             list.addAll(verbService.findAll());
+            list.addAll(genericService.findAll());
             add(new GameLayout(baseWordService,list));
         });
     }

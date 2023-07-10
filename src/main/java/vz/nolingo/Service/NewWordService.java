@@ -1,5 +1,7 @@
 package vz.nolingo.Service;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -22,10 +24,21 @@ public class NewWordService extends BaseWordService {
         dialog = new Dialog();
         dialog.addThemeName("dark");
         dialog.setHeaderTitle("New Noun");
-        createWordEditLayout(clazz);
+        createEmptyWordEditLayout(clazz);
         Button saveButton = new Button("Save", e -> save(clazz,paramsLayout));
         dialog.getFooter().add(saveButton);
         dialog.open();
+    }
+
+    public Dialog showUpdateDialogWindow(Class<? extends BaseWord> clazz,BaseWord word){
+        dialog = new Dialog();
+        dialog.addThemeName("dark");
+        dialog.setHeaderTitle("New Noun");
+        createWordEditLayout(clazz, word);
+        Button saveButton = new Button("Save", e -> update(clazz,paramsLayout,word));
+        dialog.getFooter().add(saveButton);
+        dialog.open();
+        return dialog;
     }
 
     @SneakyThrows
@@ -35,11 +48,25 @@ public class NewWordService extends BaseWordService {
         a.build(newWordLayout.getValues());
         getController(clazz).save(a);
         dialog.remove(paramsLayout);
-        createWordEditLayout(clazz);
+        createEmptyWordEditLayout(clazz);
 
     }
-    private void createWordEditLayout(Class<? extends BaseWord> clazz){
-        paramsLayout = new WordEditLayout(clazz);
+
+    @SneakyThrows
+    @SuppressWarnings("all")
+    private void update(Class<? extends BaseWord> clazz,WordEditLayout newWordLayout, BaseWord word){
+        word.build(newWordLayout.getValues());
+        getController(clazz).save(word);
+        dialog.close();
+
+    }
+    private void createEmptyWordEditLayout(Class<? extends BaseWord> clazz){
+        paramsLayout = new WordEditLayout(clazz, Optional.empty());
+        dialog.add(paramsLayout);
+    }
+    
+    public void createWordEditLayout(Class<? extends BaseWord> clazz, BaseWord word){
+        paramsLayout = new WordEditLayout(clazz, Optional.of(word));
         dialog.add(paramsLayout);
     }
     
